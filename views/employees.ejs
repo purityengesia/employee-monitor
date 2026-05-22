@@ -1,0 +1,85 @@
+<%- include('partials/header', { title: 'Employees', page: 'employees', employer, alertCount: 0 }) %>
+
+<div class="card">
+  <div class="card-header">
+    <h2>All Employees <span class="count-tag"><%= employees.length %></span></h2>
+    <div class="header-actions">
+      <input type="text" id="emp-search" placeholder="Search name or department..." class="search-input" oninput="filterTable(this.value)"/>
+      <a href="/employees/add" class="btn-primary">+ Add Employee</a>
+    </div>
+  </div>
+
+  <% if (employees.length === 0) { %>
+    <div class="empty-state big">
+      <div class="empty-icon">◉</div>
+      <h3>No employees yet</h3>
+      <p>Add your first employee to start monitoring their activity.</p>
+      <a href="/employees/add" class="btn-primary" style="margin-top:16px;display:inline-block">+ Add Employee</a>
+    </div>
+  <% } else { %>
+  <div class="table-wrap">
+    <table class="data-table" id="emp-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Department</th>
+          <th>Email</th>
+          <th>Last Activity</th>
+          <th>Violations</th>
+          <th>Risk</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% employees.forEach(emp => { %>
+        <tr class="emp-row" data-name="<%= emp.name.toLowerCase() %>" data-dept="<%= emp.department.toLowerCase() %>">
+          <td>
+            <div class="emp-cell">
+              <div class="avatar <%= emp.riskLevel %>"><%= emp.avatar %></div>
+              <div>
+                <div class="emp-name"><%= emp.name %></div>
+                <div class="emp-status online">● Online</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="dept-tag"><%= emp.department %></span></td>
+          <td class="email-cell"><%= emp.email %></td>
+          <td class="time-cell">
+            <% if (emp.lastActivity) { %>
+              <span class="activity-type <%= emp.lastActivity.isViolation ? 'violation' : 'safe' %>">
+                <%= emp.lastActivity.type.replace('_', ' ') %>
+              </span>
+              <div class="time-ago"><%= new Date(emp.lastActivity.timestamp).toLocaleTimeString() %></div>
+            <% } else { %>
+              <span class="no-data">No activity yet</span>
+            <% } %>
+          </td>
+          <td><div class="violation-count <%= emp.riskLevel %>"><%= emp.violationCount %></div></td>
+          <td><span class="risk-badge <%= emp.riskLevel %>"><%= emp.riskLevel.toUpperCase() %></span></td>
+          <td>
+            <div class="row-actions">
+              <a href="/employees/<%= emp.id %>" class="btn-sm">View</a>
+              <form method="POST" action="/employees/<%= emp.id %>/delete" onsubmit="return confirm('Remove <%= emp.name %> from monitoring?')">
+                <button type="submit" class="btn-sm danger">Remove</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <% } %>
+</div>
+
+<script>
+function filterTable(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('.emp-row').forEach(row => {
+    const match = row.dataset.name.includes(q) || row.dataset.dept.includes(q);
+    row.style.display = match ? '' : 'none';
+  });
+}
+</script>
+
+<%- include('partials/footer') %>

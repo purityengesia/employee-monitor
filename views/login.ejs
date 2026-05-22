@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — WorkWatch</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <div class="login-left">
+      <div class="login-brand">
+        <span class="logo-icon large">◈</span>
+        <h1>WorkWatch</h1>
+        <p>Real-time employee productivity monitoring. Know what's happening, when it matters.</p>
+      </div>
+      <div class="login-features">
+        <div class="feat-item"><span>◉</span> Track web & phone activity</div>
+        <div class="feat-item"><span>◬</span> Instant violation alerts</div>
+        <div class="feat-item"><span>⊡</span> Productivity analytics</div>
+        <div class="feat-item"><span>⊕</span> Configurable policies</div>
+      </div>
+    </div>
+    <div class="login-right">
+      <div class="login-card">
+        <h2>Employer Login</h2>
+        <p class="login-sub">Sign in to access your monitoring dashboard</p>
+        <% if (error) { %>
+          <div class="alert-box error"><%= error %></div>
+        <% } %>
+        <form method="POST" action="/login">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" name="username" placeholder="admin" required autocomplete="username"/>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"/>
+          </div>
+          <button type="submit" class="btn-primary full">Sign In</button>
+        </form>
+        <p class="login-hint">Demo: <code>admin</code> / <code>admin123</code></p>
+      </div>
+    </div>
+  </div>
+  <script src="/js/app.js"></script>
+</body>
+</html>

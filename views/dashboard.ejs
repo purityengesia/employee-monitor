@@ -1,0 +1,166 @@
+<%- include('partials/header', { title: 'Dashboard', page: 'dashboard', employer, alertCount: unacknowledgedAlerts }) %>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue">◉</div>
+    <div class="stat-body">
+      <div class="stat-num" id="stat-employees"><%= totalEmployees %></div>
+      <div class="stat-label">Employees Monitored</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">◬</div>
+    <div class="stat-body">
+      <div class="stat-num" id="stat-violations"><%= totalViolations %></div>
+      <div class="stat-label">Total Violations</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">📱</div>
+    <div class="stat-body">
+      <div class="stat-num" id="stat-phone"><%= phoneViolations %></div>
+      <div class="stat-label">Phone Violations</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow">◈</div>
+    <div class="stat-body">
+      <div class="stat-num" id="stat-alerts"><%= unacknowledgedAlerts %></div>
+      <div class="stat-label">Unread Alerts</div>
+    </div>
+  </div>
+</div>
+
+<% if (totalEmployees === 0) { %>
+<div class="card">
+  <div class="empty-state big">
+    <div class="empty-icon">◈</div>
+    <h3>No employees being monitored yet</h3>
+    <p>Add employees to start tracking their activity, violations, and productivity.</p>
+    <a href="/employees/add" class="btn-primary" style="margin-top:16px;display:inline-block">+ Add Your First Employee</a>
+  </div>
+</div>
+<% } else { %>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header">
+      <h2>Employee Risk Overview</h2>
+      <a href="/employees" class="link-small">View all →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>Employee</th><th>Dept</th><th>Violations</th><th>Risk</th></tr>
+        </thead>
+        <tbody>
+          <% riskEmployees.forEach(emp => { %>
+          <tr onclick="window.location='/employees/<%= emp.id %>'" style="cursor:pointer">
+            <td>
+              <div class="emp-cell">
+                <div class="avatar"><%= emp.avatar %></div>
+                <span><%= emp.name %></span>
+              </div>
+            </td>
+            <td><span class="dept-tag"><%= emp.department %></span></td>
+            <td><strong><%= emp.violationCount %></strong></td>
+            <td><span class="risk-badge <%= emp.riskLevel %>"><%= emp.riskLevel.toUpperCase() %></span></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h2>Recent Alerts</h2>
+      <a href="/alerts" class="link-small">View all →</a>
+    </div>
+    <% if (recentAlerts.length === 0) { %>
+      <div class="empty-state">No alerts yet. System is clean ✅</div>
+    <% } else { %>
+    <div class="alerts-list">
+      <% recentAlerts.forEach(alert => { %>
+      <div class="alert-item <%= alert.acknowledged ? 'ack' : '' %>">
+        <div class="alert-dot <%= alert.severity %>"></div>
+        <div class="alert-body">
+          <div class="alert-msg"><%= alert.message %></div>
+          <div class="alert-time"><%= new Date(alert.timestamp).toLocaleString() %></div>
+        </div>
+        <% if (!alert.acknowledged) { %><span class="new-badge">NEW</span><% } %>
+      </div>
+      <% }); %>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- Simulate Activity -->
+<div class="card demo-card">
+  <div class="card-header">
+    <div>
+      <h2>⚡ Simulate Activity <span class="demo-tag">DEMO</span></h2>
+      <p class="card-sub">Trigger a live activity event to demonstrate monitoring</p>
+    </div>
+  </div>
+  <div class="sim-form">
+    <select id="sim-employee">
+      <% riskEmployees.forEach(emp => { %>
+        <option value="<%= emp.id %>"><%= emp.name %></option>
+      <% }); %>
+    </select>
+    <select id="sim-type">
+      <option value="web_visit">Web Visit</option>
+      <option value="phone_detected">Phone Detected</option>
+      <option value="idle">Idle</option>
+    </select>
+    <select id="sim-site">
+      <option value="facebook.com">facebook.com 🚫</option>
+      <option value="twitter.com">twitter.com 🚫</option>
+      <option value="instagram.com">instagram.com 🚫</option>
+      <option value="youtube.com">youtube.com 🚫</option>
+      <option value="tiktok.com">tiktok.com 🚫</option>
+      <option value="github.com">github.com ✅</option>
+      <option value="docs.google.com">docs.google.com ✅</option>
+    </select>
+    <select id="sim-device">
+      <option value="desktop">🖥 Desktop</option>
+      <option value="mobile">📱 Mobile / Phone</option>
+    </select>
+    <button class="btn-primary" onclick="simulateActivity()">▶ Simulate</button>
+  </div>
+  <div id="sim-result" class="sim-result hidden"></div>
+</div>
+
+<% } %>
+
+<script>
+async function simulateActivity() {
+  const body = {
+    employeeId: document.getElementById('sim-employee').value,
+    type: document.getElementById('sim-type').value,
+    site: document.getElementById('sim-site').value,
+    device: document.getElementById('sim-device').value,
+  };
+  const res = await fetch('/api/activity', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  const el = document.getElementById('sim-result');
+  el.className = 'sim-result ' + (data.isViolation ? 'violation' : 'safe');
+  el.textContent = data.isViolation
+    ? '🚨 VIOLATION DETECTED — Alert created!'
+    : '✅ Normal activity logged.';
+
+  const stats = await fetch('/api/stats').then(r => r.json());
+  const set = (id, val) => { const e = document.getElementById(id); if(e) e.textContent = val; };
+  set('stat-violations', stats.totalViolations);
+  set('stat-phone', stats.phoneViolations);
+  set('stat-alerts', stats.unacknowledgedAlerts);
+}
+</script>
+
+<%- include('partials/footer') %>

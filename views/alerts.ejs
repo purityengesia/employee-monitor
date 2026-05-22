@@ -1,0 +1,50 @@
+<%- include('partials/header', { title: 'Alerts', page: 'alerts', employer, alertCount: unreadCount }) %>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Violations & Alerts <span class="badge"><%= unreadCount %> unread</span></h2>
+    <button class="btn-primary" onclick="acknowledgeAll()">✓ Mark All Read</button>
+  </div>
+  <div class="alerts-list large">
+    <% if (alerts.length === 0) { %>
+      <div class="empty-state">No alerts. All clear! ✅</div>
+    <% } %>
+    <% alerts.forEach(alert => { %>
+    <div class="alert-item <%= alert.acknowledged ? 'ack' : '' %>" id="alert-<%= alert.id %>">
+      <div class="alert-dot <%= alert.severity %>"></div>
+      <div class="alert-body">
+        <div class="alert-msg"><%= alert.message %></div>
+        <div class="alert-meta">
+          <span class="alert-time"><%= new Date(alert.timestamp).toLocaleString() %></span>
+          <span class="severity-tag <%= alert.severity %>"><%= alert.severity.toUpperCase() %></span>
+        </div>
+      </div>
+      <% if (!alert.acknowledged) { %>
+        <button class="btn-sm ack-btn" onclick="acknowledge(<%= alert.id %>)">✓ Ack</button>
+      <% } else { %>
+        <span class="ack-label">✓ Acknowledged</span>
+      <% } %>
+    </div>
+    <% }); %>
+  </div>
+</div>
+
+<script>
+async function acknowledge(id) {
+  await fetch(`/alerts/${id}/acknowledge`, { method: 'POST' });
+  const el = document.getElementById(`alert-${id}`);
+  el.classList.add('ack');
+  el.querySelector('.ack-btn').outerHTML = '<span class="ack-label">✓ Acknowledged</span>';
+  const dot = el.querySelector('.alert-dot');
+  // update unread count header
+  const badge = document.querySelector('.card-header .badge');
+  if (badge) badge.textContent = Math.max(0, parseInt(badge.textContent) - 1) + ' unread';
+}
+
+async function acknowledgeAll() {
+  await fetch('/alerts/acknowledge-all', { method: 'POST' });
+  location.reload();
+}
+</script>
+
+<%- include('partials/footer') %>

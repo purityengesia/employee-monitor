@@ -1,0 +1,57 @@
+<%- include('partials/header', { title: 'Activity Log', page: 'activity', employer, alertCount: 0 }) %>
+
+<div class="card">
+  <div class="card-header">
+    <h2>All Activity</h2>
+    <form method="GET" action="/activity" class="filter-form">
+      <select name="filter" onchange="this.form.submit()">
+        <option value="all" <%= filter==='all'?'selected':'' %>>All Events</option>
+        <option value="violations" <%= filter==='violations'?'selected':'' %>>Violations Only</option>
+        <option value="phone" <%= filter==='phone'?'selected':'' %>>Phone Activity</option>
+      </select>
+      <select name="employee" onchange="this.form.submit()">
+        <option value="">All Employees</option>
+        <% employees.forEach(emp => { %>
+          <option value="<%= emp.id %>" <%= selectedEmployee==emp.id?'selected':'' %>><%= emp.name %></option>
+        <% }); %>
+      </select>
+    </form>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Time</th><th>Employee</th><th>Type</th><th>Site</th><th>Device</th><th>Duration</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <% logs.forEach(log => { %>
+      <tr class="<%= log.isViolation ? 'row-violation' : '' %>">
+        <td class="time-cell"><%= new Date(log.timestamp).toLocaleString() %></td>
+        <td>
+          <a href="/employees/<%= log.employeeId %>" class="emp-link"><%= log.employeeName %></a>
+        </td>
+        <td><span class="activity-type <%= log.isViolation ? 'violation' : 'safe' %>"><%= log.type.replace('_',' ') %></span></td>
+        <td><%= log.site || '—' %></td>
+        <td>
+          <% if (log.device === 'mobile') { %>
+            <span class="device-mobile">📱 Phone</span>
+          <% } else { %>
+            <span class="device-desktop">🖥 Desktop</span>
+          <% } %>
+        </td>
+        <td><%= log.duration %>s</td>
+        <td>
+          <% if (log.isViolation) { %>
+            <span class="risk-badge high">VIOLATION</span>
+          <% } else { %>
+            <span class="risk-badge low">CLEAN</span>
+          <% } %>
+        </td>
+      </tr>
+      <% }); %>
+    </tbody>
+  </table>
+  <% if (logs.length === 0) { %>
+    <div class="empty-state">No activity found for the selected filters.</div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

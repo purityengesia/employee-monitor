@@ -1,0 +1,79 @@
+<%- include('partials/header', { title: 'Settings', page: 'settings', employer, alertCount: 0 }) %>
+
+<% if (saved) { %>
+  <div class="toast success">✓ Settings saved successfully!</div>
+<% } %>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header"><h2>Monitoring Policy</h2></div>
+    <form method="POST" action="/settings">
+      <div class="settings-section">
+        <h3>Work Hours</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Work Start Time</label>
+            <input type="time" name="workStart" value="<%= settings.workStart %>"/>
+          </div>
+          <div class="form-group">
+            <label>Work End Time</label>
+            <input type="time" name="workEnd" value="<%= settings.workEnd %>"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Alert Threshold</h3>
+        <div class="form-group">
+          <label>Violations before flagging as HIGH risk</label>
+          <input type="number" name="alertThreshold" value="<%= settings.alertThreshold %>" min="1" max="20"/>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Blocked Sites</h3>
+        <p class="field-hint">One domain per line. Visits to these sites during work hours will trigger alerts.</p>
+        <div class="form-group">
+          <textarea name="blockedSites" rows="8"><%= settings.blockedSites.join('\n') %></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">Save Settings</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2>Current Policy Summary</h2></div>
+    <div class="policy-summary">
+      <div class="policy-item">
+        <span class="policy-label">Work Hours</span>
+        <span class="policy-value"><%= settings.workStart %> — <%= settings.workEnd %></span>
+      </div>
+      <div class="policy-item">
+        <span class="policy-label">Alert Threshold</span>
+        <span class="policy-value"><%= settings.alertThreshold %> violations</span>
+      </div>
+      <div class="policy-item">
+        <span class="policy-label">Blocked Sites</span>
+        <div class="blocked-list">
+          <% settings.blockedSites.forEach(site => { %>
+            <span class="blocked-tag"><%= site %></span>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <h4>How Monitoring Works</h4>
+      <ul>
+        <li>Web activity is tracked per employee during configured work hours</li>
+        <li>Visits to blocked sites generate automatic alerts</li>
+        <li>Phone / mobile device usage detected via user-agent and network signals</li>
+        <li>Idle time detection flags extended periods of inactivity</li>
+        <li>Risk levels update in real-time based on cumulative violations</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

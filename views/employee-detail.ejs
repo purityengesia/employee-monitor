@@ -1,0 +1,107 @@
+<%- include('partials/header', { title: employee.name, page: 'employees', employer, alertCount: 0 }) %>
+
+<a href="/employees" class="back-link">← Back to Employees</a>
+
+<div class="emp-detail-header">
+  <div class="emp-detail-avatar"><%= employee.avatar %></div>
+  <div class="emp-detail-info">
+    <h2><%= employee.name %></h2>
+    <div class="emp-meta">
+      <span class="dept-tag"><%= employee.department %></span>
+      <span class="email-cell"><%= employee.email %></span>
+    </div>
+    <div class="productivity-bar-wrap">
+      <label>Productivity Score: <strong><%= productivity %>%</strong></label>
+      <div class="productivity-bar">
+        <div class="productivity-fill <%= productivity >= 70 ? 'good' : productivity >= 40 ? 'warn' : 'bad' %>"
+             style="width:<%= productivity %>%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stats-grid four">
+  <div class="stat-card">
+    <div class="stat-icon blue">◈</div>
+    <div class="stat-body">
+      <div class="stat-num"><%= totalLogs %></div>
+      <div class="stat-label">Total Events</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon red">◬</div>
+    <div class="stat-body">
+      <div class="stat-num"><%= violations %></div>
+      <div class="stat-label">Violations</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon orange">📱</div>
+    <div class="stat-body">
+      <div class="stat-num"><%= phoneViolations %></div>
+      <div class="stat-label">Phone Violations</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon yellow">◉</div>
+    <div class="stat-body">
+      <div class="stat-num"><%= alerts.length %></div>
+      <div class="stat-label">Total Alerts</div>
+    </div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header"><h2>Activity Log</h2></div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Time</th><th>Type</th><th>Site / Detail</th><th>Device</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <% logs.slice(0, 30).forEach(log => { %>
+        <tr class="<%= log.isViolation ? 'row-violation' : '' %>">
+          <td class="time-cell"><%= new Date(log.timestamp).toLocaleTimeString() %></td>
+          <td><span class="activity-type"><%= log.type.replace('_', ' ') %></span></td>
+          <td><%= log.site || '—' %></td>
+          <td>
+            <% if (log.device === 'mobile') { %>
+              <span class="device-mobile">📱 Phone</span>
+            <% } else { %>
+              <span class="device-desktop">🖥 Desktop</span>
+            <% } %>
+          </td>
+          <td>
+            <% if (log.isViolation) { %>
+              <span class="risk-badge high">VIOLATION</span>
+            <% } else { %>
+              <span class="risk-badge low">OK</span>
+            <% } %>
+          </td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2>Alerts for <%= employee.name %></h2></div>
+    <div class="alerts-list">
+      <% if (alerts.length === 0) { %>
+        <div class="empty-state">No alerts for this employee.</div>
+      <% } %>
+      <% alerts.forEach(alert => { %>
+      <div class="alert-item <%= alert.acknowledged ? 'ack' : '' %>">
+        <div class="alert-dot <%= alert.severity %>"></div>
+        <div class="alert-body">
+          <div class="alert-msg"><%= alert.message %></div>
+          <div class="alert-time"><%= new Date(alert.timestamp).toLocaleString() %></div>
+        </div>
+        <% if (!alert.acknowledged) { %><span class="new-badge">NEW</span><% } %>
+      </div>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
